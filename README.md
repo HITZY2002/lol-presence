@@ -42,7 +42,7 @@
 
 ## 安装
 
-1. 在 AstrBot 插件管理中通过仓库地址安装：`https://github.com/HITZY2002/astrbot_plugin_lol_presence`，或将本目录放入 `AstrBot/data/plugins/astrbot_plugin_lol_presence/`
+1. 在 AstrBot 插件管理中通过仓库地址安装：`https://github.com/HITZY2002/lol-presence`，或将本目录放入 `AstrBot/data/plugins/astrbot_plugin_lol_presence/`
 2. 重启 AstrBot（或在 WebUI 插件页重载）
 3. Python 依赖见 `requirements.txt`；AstrBot 通常已安装这些依赖
 

@@ -2,4 +2,4 @@ name: astrbot_plugin_lol_presence
 desc: 英雄联盟国服上线提醒插件。自动识别群成员对应的 LOL 账号，在上号/开局/结算时向 QQ 群播报，并提供 /lol 在线、车队、战绩、段位等查询指令。
 version: v1.0.0
 author: HITZY2002
-repo: https://github.com/HITZY2002/astrbot_plugin_lol_presence
+repo: https://github.com/HITZY2002/lol-presence
