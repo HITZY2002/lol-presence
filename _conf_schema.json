@@ -1,0 +1,232 @@
+{
+  "presence_provider": {
+    "description": "Presence 数据源",
+    "type": "object",
+    "items": {
+      "mode": {
+        "description": "数据源模式",
+        "type": "string",
+        "options": [
+          "auto",
+          "lcu",
+          "mock"
+        ],
+        "hint": "auto=自动探测：云端可用则用云端，否则尝试本地 LCU 观察号；lcu=强制本地 LCU；mock=测试用模拟数据源",
+        "default": "auto"
+      },
+      "poll_interval": {
+        "description": "HTTP 轮询间隔（秒）",
+        "type": "int",
+        "hint": "仅 HTTP 轮询数据源生效；WebSocket 数据源另有 5 分钟全量对账",
+        "default": 45
+      },
+      "reconcile_interval": {
+        "description": "全量对账间隔（秒）",
+        "type": "int",
+        "hint": "周期性全量刷新一次所有绑定玩家状态，防止事件丢失",
+        "default": 300
+      },
+      "lcu": {
+        "description": "本地 LCU 观察号配置",
+        "type": "object",
+        "items": {
+          "auto_detect": {
+            "description": "自动探测本机 League Client",
+            "type": "bool",
+            "hint": "通过 进程参数→注册表→UX日志→lockfile 自动探测。2026 国服新客户端 lockfile 为空，走 UX 日志通道，无需提权",
+            "default": true
+          },
+          "install_dir": {
+            "description": "游戏安装目录（可选）",
+            "type": "string",
+            "hint": "自动探测失败时手动指定，例: D:\\Program Files (x86)\\英雄联盟(26)。留空则读注册表",
+            "default": ""
+          },
+          "lockfile_dir": {
+            "description": "lockfile 搜索目录（可选，老客户端用）",
+            "type": "string",
+            "hint": "例: C:\\Riot Games\\League of Legends",
+            "default": ""
+          },
+          "host": {
+            "description": "LCU 地址（可选，远程连接）",
+            "type": "string",
+            "hint": "例: 192.168.1.10:58528。远程连接另一台观察机时填写",
+            "default": ""
+          },
+          "password": {
+            "description": "LCU 远程密码（可选，远程连接）",
+            "type": "string",
+            "hint": "与观察机 UX 日志/lockfile 中的 remoting-auth-token 一致",
+            "default": ""
+          }
+        }
+      },
+      "wegame": {
+        "description": "WeGame 云端配置（实验性，无 Presence 能力）",
+        "type": "object",
+        "items": {
+          "cookie": {
+            "description": "WeGame 助手页 Cookie（可选）",
+            "type": "string",
+            "hint": "调研结论：2026 年云端无他人实时在线接口。Cookie 仅用于实验性的 QQ→LOL 角色解析（tcall basic_info），不会用于 Presence。留空保持关闭",
+            "default": ""
+          },
+          "area_id": {
+            "description": "默认大区 ID",
+            "type": "string",
+            "hint": "1=艾欧尼亚 等腾讯大区编号，用于 QQ 角色解析",
+            "default": "1"
+          }
+        }
+      }
+    }
+  },
+  "match_provider": {
+    "description": "战绩/段位数据源",
+    "type": "object",
+    "items": {
+      "mode": {
+        "description": "战绩数据源模式",
+        "type": "string",
+        "options": [
+          "auto",
+          "sgp",
+          "off"
+        ],
+        "hint": "auto=LCU 观察号可用时 SGP 优先、LCU 旧接口兜底；off=关闭战绩与段位查询",
+        "default": "auto"
+      },
+      "server_id": {
+        "description": "SGP 服务器（战绩查询走的大区网关）",
+        "type": "string",
+        "options": [
+          "hn1",
+          "hn10",
+          "tj100",
+          "tj101",
+          "nj100",
+          "gz100",
+          "cq100",
+          "bgp2"
+        ],
+        "hint": "与观察号所在大区一致即可，跨大区战绩不可查（leagues 接口限制）",
+        "default": "hn1"
+      }
+    }
+  },
+  "notification": {
+    "description": "播报默认设置（群内可用指令覆盖）",
+    "type": "object",
+    "items": {
+      "online_notification": {
+        "description": "默认开启上线播报",
+        "type": "bool",
+        "default": true
+      },
+      "game_start_notification": {
+        "description": "默认开启开局播报",
+        "type": "bool",
+        "default": true
+      },
+      "game_end_notification": {
+        "description": "默认开启结算播报",
+        "type": "bool",
+        "default": true
+      },
+      "online_cooldown_minutes": {
+        "description": "同一玩家上线播报冷却（分钟）",
+        "type": "int",
+        "hint": "防止断线重连刷屏。0 = 关闭冷却（不推荐）",
+        "default": 30
+      }
+    }
+  },
+  "resource_saver": {
+    "description": "观察号资源守护（仅本地 LCU 模式）",
+    "type": "object",
+    "items": {
+      "enabled": {
+        "description": "启用资源守护",
+        "type": "bool",
+        "hint": "实测可把客户端从 912MB/17进程 压到 286MB/2进程（-69%），好友监控不受影响。仅当这台机器只跑观察号时开启",
+        "default": false
+      },
+      "mode": {
+        "description": "守护方式",
+        "type": "string",
+        "options": [
+          "kill_ux"
+        ],
+        "hint": "kill_ux=通过客户端官方接口关闭界面进程（后端继续监听好友状态），界面可通过 WeGame 重新打开",
+        "default": "kill_ux"
+      },
+      "delay_seconds": {
+        "description": "客户端连接后延迟执行（秒）",
+        "type": "int",
+        "hint": "给登录和好友列表加载留时间",
+        "default": 90
+      },
+      "check_interval": {
+        "description": "检查间隔（秒）",
+        "type": "int",
+        "hint": "客户端重连或界面被重新打开后，会在下一轮检查时再次关闭",
+        "default": 120
+      },
+      "set_priority": {
+        "description": "尝试降低进程优先级",
+        "type": "bool",
+        "hint": "把客户端降为 BelowNormal。AstrBot 无足够权限时自动跳过",
+        "default": true
+      }
+    }
+  },
+  "zhangmeng": {
+    "description": "掌盟通知 Webhook（SmsForwarder → AstrBot，增量接入，不影响现有 LCU/SGP）",
+    "type": "object",
+    "items": {
+      "enabled": {
+        "description": "启用掌盟通知 Provider",
+        "type": "bool",
+        "hint": "启用后注册 Webhook 路由 POST /api/plug/astrbot_plugin_lol_presence/zhangmeng/notify，接收 SmsForwarder 转发的掌盟通知",
+        "default": false
+      },
+      "secret": {
+        "description": "Bearer Token 鉴权密钥",
+        "type": "string",
+        "hint": "SmsForwarder 请求头需带 Authorization: Bearer <secret>。留空表示不鉴权（不推荐）",
+        "default": ""
+      },
+      "patterns_path": {
+        "description": "解析规则文件路径（JSON）",
+        "type": "string",
+        "hint": "可配置的正则解析规则，不写死在代码里。留空用插件目录下 data/zhangmeng_patterns.json",
+        "default": ""
+      },
+      "log_dir": {
+        "description": "掌盟通知 JSONL 日志目录",
+        "type": "string",
+        "hint": "所有收到的通知（无论是否识别）都写入 JSONL，方便后续根据真实样本补 Parser。留空用插件目录下 logs/",
+        "default": ""
+      },
+      "default_cooldown_minutes": {
+        "description": "同一玩家上线事件默认冷却（分钟）",
+        "type": "int",
+        "hint": "Provider 层去重：同一玩家的同一类型事件在此时间内只提醒一次。规则级 cooldown 可覆盖此默认值",
+        "default": 10
+      }
+    }
+  },
+  "champion_cdn": {
+    "description": "英雄数据 CDN",
+    "type": "string",
+    "default": "https://game.gtimg.cn/images/lol/act/img/js/heroList/hero_list.js",
+    "hint": "腾讯官方英雄列表数据源，用于 championId → 名称映射"
+  },
+  "debug": {
+    "description": "调试模式",
+    "type": "bool",
+    "hint": "输出更详细的 [LOL] 日志（已脱敏，不含 token）",
+    "default": false
+  }
+}

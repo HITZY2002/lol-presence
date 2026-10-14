@@ -1,0 +1,2 @@
+aiohttp>=3.9
+aiosqlite>=0.19
