@@ -1,3 +1,3 @@
-from . import bind, match, status
+from . import bind, hexdata, match, status
 
-__all__ = ["bind", "status", "match"]
+__all__ = ["bind", "status", "match", "hexdata"]

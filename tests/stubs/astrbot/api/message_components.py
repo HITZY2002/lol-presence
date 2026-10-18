@@ -6,6 +6,15 @@ class Plain:
         self.text = text
 
 
+class Image:
+    def __init__(self, file):
+        self.file = file
+
+    @staticmethod
+    def fromFileSystem(path):
+        return Image(path)
+
+
 class At:
     def __init__(self, qq=None, name=""):
         self.qq = qq

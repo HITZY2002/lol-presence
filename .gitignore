@@ -18,5 +18,7 @@ logs/
 config.json
 *_config.json
 cookies*.json
+hexdata-browser/
+hexdata-cards/
 *.bak
 *.zip

@@ -20,6 +20,7 @@ from astrbot.api.star import Context, Star, StarTools, register
 
 from . import commands
 from .providers import build_providers
+from .services.hexdata_browser import HexdataBrowser
 from .services.match_service import MatchService
 from .services.notification_service import NotificationService
 from .services.player_service import PlayerService
@@ -31,7 +32,7 @@ from .utils.formatter import fmt_help
 PLUGIN_NAME = "astrbot_plugin_lol_presence"
 
 
-@register("astrbot_plugin_lol_presence", "HITZY2002", "英雄联盟国服上线提醒", "v1.0.0")
+@register("astrbot_plugin_lol_presence", "HITZY2002", "英雄联盟国服上线提醒", "v1.1.0")
 class LolPresencePlugin(Star):
     """英雄联盟国服上线提醒：上号/开局/结算自动播报 + /lol 查询指令。"""
 
@@ -44,6 +45,7 @@ class LolPresencePlugin(Star):
         self.champions = ChampionMap(self._cfg("champion_cdn", default="") or None)
         self.players: PlayerService | None = None
         self.matches: MatchService | None = None
+        self.hexdata: HexdataBrowser | None = None
         self.presence: PresenceService | None = None
         self.notifier: NotificationService | None = None
         self.provider = None
@@ -76,6 +78,7 @@ class LolPresencePlugin(Star):
 
         self.players = PlayerService(self.db)
         self.matches = MatchService(self.db)
+        self.hexdata = HexdataBrowser(data_dir, self._cfg("hexdata", default={}) or {})
         self.presence = PresenceService(self.db)
 
         online_cooldown = int(
@@ -157,6 +160,8 @@ class LolPresencePlugin(Star):
         if self._tasks:
             await asyncio.wait(self._tasks, timeout=3.0)
         self._tasks.clear()
+        if self.hexdata:
+            await self.hexdata.close()
         if self.provider:
             await self.provider.stop()
         if self.zhangmeng_provider:
@@ -407,6 +412,9 @@ class LolPresencePlugin(Star):
             "最近": commands.match.cmd_history,
             "段位": commands.match.cmd_ranked,
             "今日": commands.match.cmd_today,
+            "查分": commands.hexdata.cmd_score,
+            "海斗分": commands.hexdata.cmd_score,
+            "战绩卡": commands.hexdata.cmd_score,
             "绑定": commands.bind.cmd_bind,
             "自动绑定": commands.bind.cmd_autobind,
             "解绑": commands.bind.cmd_unbind,

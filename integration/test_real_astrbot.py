@@ -92,6 +92,13 @@ class FakeEvent:
     def plain_result(self, text):
         return ("plain", text)
 
+    def chain_result(self, chain):
+        from astrbot.api.event import MessageEventResult
+
+        result = MessageEventResult()
+        result.chain = chain
+        return result
+
     async def get_group(self):
         class G:
             group_owner = "10001"
@@ -211,6 +218,43 @@ async def test_full_lifecycle_with_real_astrbot():
     assert results and "绑定" in results[0][1]
 
     await plugin.terminate()
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_hexdata_routing_with_real_message_components(tmp_path):
+    """Return one text-and-image result without sending unsolicited broadcasts."""
+    import time
+    from unittest.mock import AsyncMock
+
+    from astrbot.api.message_components import Image, Plain
+    from astrbot_plugin_lol_presence.models.player import Binding
+    from astrbot_plugin_lol_presence.services.hexdata_browser import HexdataCard
+
+    context, plugin = _make_context_and_plugin()
+    await plugin.initialize()
+    try:
+        await plugin.db.upsert_binding(
+            Binding("20002", "PU-B", game_name="测试 玩家", tag_line="12345")
+        )
+        plugin.hexdata.get_card = AsyncMock(
+            return_value=HexdataCard(
+                "测试 玩家#12345", tmp_path / "card.png", time.time()
+            )
+        )
+        for alias in ("查分", "海斗分", "战绩卡"):
+            results = await drain(
+                plugin.lol_command(FakeEvent(text=f"/lol {alias}", at_qq="20002"))
+            )
+            assert len(results) == 1
+            assert len(results[0].chain) == 2
+            assert isinstance(results[0].chain[0], Plain)
+            assert isinstance(results[0].chain[1], Image)
+            assert results[0].chain[1].file.startswith("file:///")
+        assert plugin.hexdata.get_card.await_count == 3
+        assert context.sent == []
+    finally:
+        await plugin.terminate()
 
 
 @pytest.mark.integration

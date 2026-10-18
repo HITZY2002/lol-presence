@@ -115,6 +115,43 @@
       }
     }
   },
+  "hexdata": {
+    "description": "Hexdata 网页海斗查分（独立浏览器，按需查询）",
+    "type": "object",
+    "items": {
+      "enabled": {
+        "description": "启用 Hexdata 网页查分",
+        "type": "bool",
+        "default": false,
+        "hint": "通过官网页面查询并生成原始战绩卡，不直连接口。首次需在专用窗口手动登录；不会读取日常浏览器的凭据。"
+      },
+      "browser_channel": {
+        "description": "浏览器",
+        "type": "string",
+        "options": ["chromium", "msedge", "chrome"],
+        "default": "chromium",
+        "hint": "Windows 推荐已安装的 msedge。chromium 需先运行 python -m playwright install chromium。"
+      },
+      "headless": {
+        "description": "隐藏浏览器窗口",
+        "type": "bool",
+        "default": false,
+        "hint": "首次登录请保持关闭。启用后若站点限制无头浏览器，查询会停止，不会尝试绕过。Linux 有头模式需图形桌面。"
+      },
+      "cache_seconds": {
+        "description": "同一账号战绩卡缓存（秒）",
+        "type": "int",
+        "default": 300,
+        "hint": "60～1800 秒。命中时标注生成时间与缓存，不重复消耗站点查询额度。"
+      },
+      "cooldown_seconds": {
+        "description": "全局查询冷却（秒）",
+        "type": "int",
+        "default": 30,
+        "hint": "至少 15 秒，一次只处理一个查询。验证码、登录失效、限流时停止，不批量查询、不自动重试。"
+      }
+    }
+  },
   "notification": {
     "description": "播报默认设置（群内可用指令覆盖）",
     "type": "object",
